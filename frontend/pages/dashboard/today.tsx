@@ -165,7 +165,8 @@ export default function TodayDashboard() {
   }
 
   return (
-    <main style={styles.container}>
+    <main style={styles.pageWrapper}>
+      <div style={styles.container}>
       <header style={styles.header}>
         <h1 style={styles.title}>📅 Today&apos;s Tasks</h1>
         <p style={styles.subtitle}>
@@ -257,19 +258,22 @@ export default function TodayDashboard() {
           </div>
         </>
       )}
+      </div>
     </main>
   );
 }
 
 // Inline styles for simplicity (no external CSS dependencies)
 const styles: Record<string, React.CSSProperties> = {
+  pageWrapper: {
+    minHeight: "100vh",
+    backgroundColor: "#f8fafc",
+    fontFamily: "'Segoe UI', system-ui, -apple-system, sans-serif",
+  },
   container: {
     maxWidth: "1200px",
     margin: "0 auto",
     padding: "2rem",
-    fontFamily: "'Segoe UI', system-ui, -apple-system, sans-serif",
-    minHeight: "100vh",
-    backgroundColor: "#f8fafc",
   },
   header: {
     marginBottom: "2rem",
