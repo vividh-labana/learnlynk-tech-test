@@ -165,3 +165,57 @@ Write **8–12 lines** describing how you would implement a Stripe Checkout flow
 3. Share the link.
 
 Good luck.
+
+---
+
+## Stripe Answer
+
+**Implementing Stripe Checkout for Application Fee:**
+
+1. **Insert payment_requests row**: When a user clicks "Pay Application Fee", I create a `payment_requests` record with `application_id`, `amount`, `status: 'pending'`, and `created_at` timestamp before redirecting to Stripe.
+
+2. **Call Stripe**: Using `stripe.checkout.sessions.create()`, I create a Checkout Session with the fee amount, success/cancel URLs, and include the `payment_requests.id` in the `metadata` field for webhook correlation.
+
+3. **Store from checkout session**: I store `session_id`, `checkout_url` in the `payment_requests` row, and redirect the user to `checkout_url` to complete payment.
+
+4. **Handle webhooks**: I set up a `/api/webhooks/stripe` endpoint listening for `checkout.session.completed` and `checkout.session.expired` events. I verify the webhook signature using `stripe.webhooks.constructEvent()` to ensure authenticity.
+
+5. **Update application after payment**: On `checkout.session.completed`, I extract `payment_requests.id` from metadata, update `payment_requests.status` to `'paid'`, store the `payment_intent_id`, and update the `applications` table to mark `payment_status: 'paid'`, enabling the applicant to proceed with their application.
+
+---
+
+## Notes & Assumptions
+
+### Task 1 - Database Schema
+- Added `team_id` to leads table for team-based access control
+- Created auto-update triggers for `updated_at` timestamps
+- Added partial index on tasks for active (non-completed) tasks to optimize dashboard queries
+
+### Task 2 - RLS Policies
+- Created helper functions to extract JWT claims safely with null handling
+- Added UPDATE and DELETE policies beyond the required SELECT/INSERT for completeness
+- Applied basic tenant isolation RLS to applications and tasks tables as well
+
+### Task 3 - Edge Function
+- Validates application exists before creating task (prevents orphan tasks)
+- Inherits `tenant_id` from the parent application automatically
+- Added CORS headers for browser-based API calls
+- Returns detailed validation errors for better debugging
+
+### Task 4 - Frontend Dashboard
+- Uses date range filtering (start/end of today) for accurate "today" queries
+- Optimistic UI update on task completion (removes from list immediately)
+- Added visual indicators: task type badges, overdue highlighting
+- Included refresh button and loading/error states for better UX
+
+### Technologies Used
+- PostgreSQL with Supabase extensions
+- Supabase Edge Functions (Deno runtime)
+- Next.js with TypeScript
+- Supabase JS Client v2
+
+---
+
+**Author:** Vividh Laban  
+**Email:** vividhlabana32@gmail.com  
+**GitHub:** [vividh-labana](https://github.com/vividh-labana)
