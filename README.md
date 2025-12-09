@@ -1,6 +1,6 @@
 # LearnLynk Technical Assessment - Solution
 
-**Author:** Vividh Laban  
+**Author:** Vividh Labana 
 **Email:** vividhlabana32@gmail.com  
 **GitHub:** [vividh-labana](https://github.com/vividh-labana)
 
