@@ -128,27 +128,6 @@ Next.js page displaying today's tasks.
 - Overdue task highlighting
 - Responsive table design
 
-**Screenshot:**
-The dashboard shows a table with tasks, each having a "Mark Complete" button that updates the task status in real-time.
-
----
-
-## Task 5 — Stripe Answer
-
-**Implementing Stripe Checkout for Application Fee:**
-
-1. **Storing payment_request**: When user clicks "Pay Fee", I first insert a `payment_requests` row with `application_id`, `amount`, `currency`, and `status: 'pending'` to track the payment intent before calling Stripe.
-
-2. **Creating Checkout Session**: I call `stripe.checkout.sessions.create()` with line items (fee amount), `success_url`, `cancel_url`, and pass `payment_requests.id` in metadata for webhook correlation. I store the returned `session_id` in the payment_requests row.
-
-3. **Redirect to Stripe**: User is redirected to the Checkout Session URL where they complete payment securely on Stripe's hosted page.
-
-4. **Handling Stripe Webhook**: I configure a `/api/webhooks/stripe` endpoint to receive `checkout.session.completed` events. I verify the webhook signature using `stripe.webhooks.constructEvent(body, sig, secret)` to ensure the request is genuinely from Stripe.
-
-5. **Updating payment status**: On successful webhook, I extract `payment_requests.id` from `session.metadata`, update `payment_requests.status` to `'paid'`, and store `payment_intent_id` and `paid_at` timestamp.
-
-6. **Updating application stage/timeline**: After confirming payment, I update the `applications` table: set `stage` from `'payment_pending'` to `'submitted'`, update `payment_status: 'paid'`, and insert a record in `application_timeline` with event `'fee_paid'` and timestamp to maintain audit history.
-
 ---
 
 ## Setup & Running Locally
@@ -186,6 +165,18 @@ The dashboard shows a table with tasks, each having a "Mark Complete" button tha
 
 ---
 
-## License
+## Stripe Answer
 
-This project was created as part of the LearnLynk technical assessment.
+**Implementing Stripe Checkout for Application Fee:**
+
+1. **Storing payment_request**: When user clicks "Pay Fee", I first insert a `payment_requests` row with `application_id`, `amount`, `currency`, and `status: 'pending'` to track the payment intent before calling Stripe.
+
+2. **Creating Checkout Session**: I call `stripe.checkout.sessions.create()` with line items (fee amount), `success_url`, `cancel_url`, and pass `payment_requests.id` in metadata for webhook correlation. I store the returned `session_id` in the payment_requests row.
+
+3. **Redirect to Stripe**: User is redirected to the Checkout Session URL where they complete payment securely on Stripe's hosted page.
+
+4. **Handling Stripe Webhook**: I configure a `/api/webhooks/stripe` endpoint to receive `checkout.session.completed` events. I verify the webhook signature using `stripe.webhooks.constructEvent(body, sig, secret)` to ensure the request is genuinely from Stripe.
+
+5. **Updating payment status**: On successful webhook, I extract `payment_requests.id` from `session.metadata`, update `payment_requests.status` to `'paid'`, and store `payment_intent_id` and `paid_at` timestamp.
+
+6. **Updating application stage/timeline**: After confirming payment, I update the `applications` table: set `stage` from `'payment_pending'` to `'submitted'`, update `payment_status: 'paid'`, and insert a record in `application_timeline` with event `'fee_paid'` and timestamp to maintain audit history.
