@@ -167,13 +167,28 @@ serve(async (req: Request) => {
       );
     }
 
+    // Emit Supabase Realtime broadcast event: "task.created"
+    const channel = supabase.channel("tasks");
+    await channel.send({
+      type: "broadcast",
+      event: "task.created",
+      payload: {
+        task_id: task.id,
+        application_id: body.application_id,
+        task_type: body.task_type,
+        due_at: body.due_at,
+        tenant_id: application.tenant_id,
+        created_at: new Date().toISOString(),
+      },
+    });
+
     // Return success response
     return new Response(
       JSON.stringify({
         success: true,
         task_id: task.id,
       }),
-      { status: 201, headers: corsHeaders }
+      { status: 200, headers: corsHeaders }
     );
 
   } catch (err) {
