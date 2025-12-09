@@ -172,15 +172,17 @@ Good luck.
 
 **Implementing Stripe Checkout for Application Fee:**
 
-1. **Insert payment_requests row**: When a user clicks "Pay Application Fee", I create a `payment_requests` record with `application_id`, `amount`, `status: 'pending'`, and `created_at` timestamp before redirecting to Stripe.
+1. **Storing payment_request**: When user clicks "Pay Fee", I first insert a `payment_requests` row with `application_id`, `amount`, `currency`, and `status: 'pending'` to track the payment intent before calling Stripe.
 
-2. **Call Stripe**: Using `stripe.checkout.sessions.create()`, I create a Checkout Session with the fee amount, success/cancel URLs, and include the `payment_requests.id` in the `metadata` field for webhook correlation.
+2. **Creating Checkout Session**: I call `stripe.checkout.sessions.create()` with line items (fee amount), `success_url`, `cancel_url`, and pass `payment_requests.id` in metadata for webhook correlation. I store the returned `session_id` in the payment_requests row.
 
-3. **Store from checkout session**: I store `session_id`, `checkout_url` in the `payment_requests` row, and redirect the user to `checkout_url` to complete payment.
+3. **Redirect to Stripe**: User is redirected to the Checkout Session URL where they complete payment securely on Stripe's hosted page.
 
-4. **Handle webhooks**: I set up a `/api/webhooks/stripe` endpoint listening for `checkout.session.completed` and `checkout.session.expired` events. I verify the webhook signature using `stripe.webhooks.constructEvent()` to ensure authenticity.
+4. **Handling Stripe Webhook**: I configure a `/api/webhooks/stripe` endpoint to receive `checkout.session.completed` events. I verify the webhook signature using `stripe.webhooks.constructEvent(body, sig, secret)` to ensure the request is genuinely from Stripe.
 
-5. **Update application after payment**: On `checkout.session.completed`, I extract `payment_requests.id` from metadata, update `payment_requests.status` to `'paid'`, store the `payment_intent_id`, and update the `applications` table to mark `payment_status: 'paid'`, enabling the applicant to proceed with their application.
+5. **Updating payment status**: On successful webhook, I extract `payment_requests.id` from `session.metadata`, update `payment_requests.status` to `'paid'`, and store `payment_intent_id` and `paid_at` timestamp.
+
+6. **Updating application stage/timeline**: After confirming payment, I update the `applications` table: set `stage` from `'payment_pending'` to `'submitted'`, update `payment_status: 'paid'`, and insert a record in `application_timeline` with event `'fee_paid'` and timestamp to maintain audit history.
 
 ---
 
