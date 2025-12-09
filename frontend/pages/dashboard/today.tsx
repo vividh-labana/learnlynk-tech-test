@@ -239,7 +239,7 @@ export default function TodayDashboard() {
                             opacity: updatingTaskId === task.id ? 0.6 : 1,
                           }}
                         >
-                          {updatingTaskId === task.id ? "Updating..." : "✓ Complete"}
+                          {updatingTaskId === task.id ? "Updating..." : "Mark Complete"}
                         </button>
                       </td>
                     </tr>
