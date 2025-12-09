@@ -135,6 +135,13 @@ export default function TodayDashboard() {
   if (loading) {
     return (
       <main style={styles.container}>
+        {/* CSS keyframes for spinner animation */}
+        <style>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
         <div style={styles.loadingContainer}>
           <div style={styles.spinner}></div>
           <p style={styles.loadingText}>Loading today&apos;s tasks...</p>
