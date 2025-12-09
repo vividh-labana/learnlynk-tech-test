@@ -28,7 +28,7 @@ VALUES
 -- Create test tasks due TODAY (change date if needed)
 INSERT INTO public.tasks (tenant_id, application_id, title, type, status, due_at)
 VALUES 
-  -- Tasks due today
+  -- Tasks due today (future times)
   ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
    '33333333-3333-3333-3333-333333333333',
    'Follow up call with John',
@@ -45,14 +45,18 @@ VALUES
    '44444444-4444-4444-4444-444444444444',
    'Review Jane application',
    'review', 'open',
-   (CURRENT_DATE + INTERVAL '16 hours')::timestamptz),
+   (CURRENT_DATE + INTERVAL '16 hours')::timestamptz);
 
-  -- One overdue task (2 hours ago)
+-- Overdue task (needs explicit created_at to satisfy constraint: due_at >= created_at)
+INSERT INTO public.tasks (tenant_id, application_id, title, type, status, due_at, created_at, updated_at)
+VALUES 
   ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
    '44444444-4444-4444-4444-444444444444',
    'Urgent: Missing documents',
    'call', 'open',
-   (CURRENT_TIMESTAMP - INTERVAL '2 hours')::timestamptz);
+   (CURRENT_DATE + INTERVAL '1 hour')::timestamptz,      -- due_at: 1 hour from start of today (likely past)
+   (CURRENT_DATE - INTERVAL '1 day')::timestamptz,       -- created_at: yesterday
+   (CURRENT_DATE - INTERVAL '1 day')::timestamptz);
 
 -- Verify data
 SELECT 'Tasks created:' as info, count(*) as count FROM public.tasks;
